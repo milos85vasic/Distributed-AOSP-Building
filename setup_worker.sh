@@ -56,8 +56,8 @@ if [[ $MASTER_IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 else
   ALLOWED_NETS="$MASTER_IP"
 fi
-sudo sed -i "s/^ALLOWEDNETS=.*/ALLOWEDNETS=\"$ALLOWED_NETS\"/" /etc/default/distcc
-sudo sed -i "s/^MAX_JOBS=.*/MAX_JOBS=$JOBS/" /etc/default/distcc
+sudo sed -i 's#^ALLOWEDNETS=.*#ALLOWEDNETS="'"$ALLOWED_NETS"'"#' /etc/default/distcc
+sudo sed -i 's/^MAX_JOBS=.*/MAX_JOBS='"$JOBS"'/' /etc/default/distcc
 
 # Configure firewall to allow distcc connections
 echo "Configuring firewall for distcc..."
