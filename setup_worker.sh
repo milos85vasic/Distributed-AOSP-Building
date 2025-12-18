@@ -23,6 +23,10 @@ echo "Installing distcc and dependencies..."
 sudo apt update
 sudo apt install -y distcc rsync openssh-server
 
+# Auto-detect cores
+CORES=$(nproc --all)
+JOBS=$((CORES * 2))  # Conservative overcommit
+
 # Ensure distcc user exists
 sudo useradd -r -s /bin/false distcc 2>/dev/null || true
 
@@ -36,7 +40,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/distccd --allow $MASTER_IP --jobs $JOBS --log-level info --verbose
+ExecStart=/usr/bin/distccd --allow $MASTER_IP --jobs ${JOBS} --log-level info --verbose
 User=distcc
 Group=distcc
 
@@ -45,10 +49,6 @@ WantedBy=multi-user.target
 EOF
   sudo systemctl daemon-reload
 fi
-
-# Auto-detect cores
-CORES=$(nproc --all)
-JOBS=$((CORES * 2))  # Conservative overcommit
 
 # Configure distccd
 echo "Configuring distccd to allow $MASTER_IP, jobs: $JOBS"
