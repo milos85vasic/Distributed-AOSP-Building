@@ -1,0 +1,12 @@
+[Unit]
+Description=distcc distributed compiler daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/distccd --daemon --allow 192.168.0.220 --jobs 16 --log-level info --verbose
+User=distcc
+Group=distcc
+
+[Install]
+WantedBy=multi-user.target

@@ -30,17 +30,16 @@ JOBS=$((CORES * 2))  # Conservative overcommit
 # Ensure distcc user exists
 sudo useradd -r -s /bin/false distcc 2>/dev/null || true
 
-# Create systemd service for distccd if missing
-if [[ ! -f /etc/systemd/system/distccd.service ]]; then
-  echo "Creating distccd systemd service..."
-  sudo tee /etc/systemd/system/distccd.service > /dev/null <<EOF
+# Always create/update systemd service for distccd
+echo "Creating/updating distccd systemd service..."
+sudo tee /etc/systemd/system/distccd.service > /dev/null <<EOF
 [Unit]
 Description=distcc distributed compiler daemon
 After=network.target
 
 [Service]
-Type=simple
-ExecStart=/usr/bin/distccd --allow $MASTER_IP --jobs ${JOBS} --log-level info --verbose
+Type=forking
+ExecStart=/usr/bin/distccd --daemon --allow $MASTER_IP --jobs ${JOBS} --log-level info --verbose
 User=distcc
 Group=distcc
 
@@ -48,7 +47,6 @@ Group=distcc
 WantedBy=multi-user.target
 EOF
   sudo systemctl daemon-reload
-fi
 
 # Configure distccd
 echo "Configuring distccd to allow $MASTER_IP, jobs: $JOBS"
