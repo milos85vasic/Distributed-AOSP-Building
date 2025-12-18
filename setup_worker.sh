@@ -28,6 +28,26 @@ echo "Installing distcc and dependencies..."
 sudo apt update
 sudo apt install -y distcc rsync openssh-server
 
+# Create systemd service for distccd if missing
+if [[ ! -f /etc/systemd/system/distccd.service ]]; then
+  echo "Creating distccd systemd service..."
+  sudo tee /etc/systemd/system/distccd.service > /dev/null <<EOF
+[Unit]
+Description=distcc distributed compiler daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/distccd --daemon --no-detach
+User=distcc
+Group=distcc
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  sudo systemctl daemon-reload
+fi
+
 # Auto-detect cores
 CORES=$(nproc --all)
 JOBS=$((CORES * 2))  # Conservative overcommit
