@@ -11,11 +11,6 @@ fi
 
 AOSP_DIR=$(realpath "$AOSP_DIR")
 
-if [[ ! -d "$AOSP_DIR/build/soong" ]]; then
-  echo "Error: $AOSP_DIR does not look like an AOSP root (missing build/soong)."
-  exit 1
-fi
-
 # Prompt for master IP if not set
 read -p "Enter master IP address: " MASTER_IP
 if [[ -z "$MASTER_IP" ]]; then
@@ -67,3 +62,8 @@ mkdir -p "$AOSP_DIR"
 
 echo "Worker setup complete for $AOSP_DIR."
 echo "distccd status: $(systemctl is-active distccd)"
+
+if [[ ! -d "$AOSP_DIR/build/soong" ]]; then
+  
+  echo "Warning: $AOSP_DIR does not look like an AOSP root (missing build/soong), probably was not synced yet"
+fi
