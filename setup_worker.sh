@@ -23,6 +23,9 @@ echo "Installing distcc and dependencies..."
 sudo apt update
 sudo apt install -y distcc rsync openssh-server
 
+# Ensure distcc user exists
+sudo useradd -r -s /bin/false distcc 2>/dev/null || true
+
 # Create systemd service for distccd if missing
 if [[ ! -f /etc/systemd/system/distccd.service ]]; then
   echo "Creating distccd systemd service..."
