@@ -60,15 +60,32 @@ Architecture: **Master-worker**, where:
    - Starts build with `pump m -j$TOTAL_JOBS`
    - Shows `sccache` stats at end
 
+### Debugging Commands
+
+```bash
+# Check distcc status on workers
+ssh worker_ip "sudo systemctl status distccd"
+
+# Check Redis status on master
+sudo systemctl status redis-server
+redis-cli ping
+
+# Verify sccache connectivity
+sccache --show-stats
+
+# Check distcc monitor
+distccmon-text 1  # Monitor distributed compilation
+```
+
 ---
 
 ## Code Organization
 
 - Root scripts:
-  - `setup_master.sh`: Master setup
-  - `setup_worker.sh`: Worker setup
-  - `setup_passwordless_ssh.sh`: SSH automation
-  - `sync_and_build.sh`: Build orchestration
+  - `setup_master.sh`: Master setup, installs deps and configures environment
+  - `setup_worker.sh`: Worker setup, configures distccd service
+  - `setup_passwordless_ssh.sh`: SSH automation using sshpass
+  - `sync_and_build.sh`: Build orchestration and source sync
 - `Upstreams/`: Contains remote tracking info
   - `GitHub.sh`: Sets `UPSTREAMABLE_REPOSITORY`
 
@@ -80,6 +97,8 @@ Architecture: **Master-worker**, where:
 - Scripts prefixed by role: `setup_*.sh`, `sync_and_build.sh`
 - Environment variables in `.distbuild_env` are exported and used across scripts
 - `$AOSP_DIR` must be consistent across all machines
+- All scripts use `set -e` for error handling
+- Error messages are descriptive and include usage instructions
 
 ---
 
@@ -89,6 +108,7 @@ Architecture: **Master-worker**, where:
 - Relies on script safety:
   - `set -e` ensures exit on error
   - Manual validation via `systemctl is-active`, `sccache --show-stats`, SSH tests
+- Build validation happens during AOSP compilation
 
 ---
 
@@ -129,6 +149,14 @@ Architecture: **Master-worker**, where:
   # Remove ~/.ssh/authorized_keys entries
   ```
 
+### 7. **Script Path Assumptions**
+- `sync_and_build.sh` assumes it's in parent directory of AOSP root (line 5)
+- All scripts expect absolute AOSP paths via `realpath`
+
+### 8. **Distribution-Specific Commands**
+- Scripts use `apt` package manager (Ubuntu/Debian)
+- Use `systemctl` for service management
+
 ---
 
 ## Project-Specific Context
@@ -137,6 +165,7 @@ Architecture: **Master-worker**, where:
 - Designed for **local clusters or cloud VMs** with trusted network
 - Optimized for fast AOSP builds — not secure by default
 - Assumes user has sudo access on all machines
+- Target platform: `aosp_arm64-eng` (hardcoded in sync_and_build.sh)
 
 ---
 
@@ -148,3 +177,5 @@ Architecture: **Master-worker**, where:
 - Add `--target` flag to `sync_and_build.sh` instead of hardcoding `aosp_arm64-eng`
 - Add error recovery and rollback
 - Add `teardown.sh` script
+- Support for other package managers (yum, dnf)
+- Add configuration file support instead of interactive prompts
