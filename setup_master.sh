@@ -43,7 +43,7 @@ sudo systemctl enable redis-server
 sudo systemctl restart redis-server
 
 # Auto-detect cores
-TOTAL_JOBS=$(nproc)
+TOTAL_JOBS=$(nproc --all)
 DISTCC_HOSTS="localhost/8"
 for ip in "${WORKER_IPS[@]}"; do
   # Test SSH
